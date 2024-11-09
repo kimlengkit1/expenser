@@ -17,11 +17,11 @@ type TabBarIconProps =
   | (MaterialIconsProps & { iconType: 'MaterialIcons' })
   | (MaterialCommunityIconsProps & { iconType: 'MaterialCommunityIcons' });
 
-export function TabBarIcon({ style, iconType, ...rest }: TabBarIconProps) {
+export function TabBarIcon({ style, iconType, name, ...rest }: TabBarIconProps) {
   // Icon rendering logic
   switch (iconType) {
     case 'Ionicons':
-      return <Ionicons name="home" size={24} color="black" />
+      return <Ionicons name={name} size={24} color="black" />
       //<Ionicons size={28} style={[{ marginBottom: -3 }, style]} {...rest} />;
     case 'MaterialIcons':
       return <MaterialCommunityIcons name="account-circle" size={24} color="black" />
