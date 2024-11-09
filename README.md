@@ -12,8 +12,7 @@ Features:
 - Tagline: "The right team for every project."
 - Problem: Students often struggle to find compatible and reliable partners for group assignments.
 - Solution: A platform that matches students based on work styles, availability, and strengths to form balanced project teams.
-Features:
-- Work style quiz (e.g., leader, researcher, designer).
+- Features: Work style quiz (e.g., leader, researcher, designer).
 - Availability calendar for scheduling meetings.
 - Team performance reviews for future matches.
 
@@ -21,8 +20,7 @@ Features:
 - Tagline: "Shared meals, shared savings."
 - Problem: Many students cook more food than they can eat, leading to waste, or struggle to afford regular meals.
 - Solution: A platform to connect students who want to share meals, ingredients, or cooking duties.
-Features:
-- Meal-sharing posts with serving sizes and dietary restrictions.
+- Features: Meal-sharing posts with serving sizes and dietary restrictions.
 - Ingredient swap board (e.g., “I have pasta, need sauce”).
 - Expense tracking for shared groceries
 
@@ -30,7 +28,6 @@ Features:
 - Tagline: "Explore together, save together."
 - Problem: Many students avoid trips due to lack of travel companions or high costs.
 - Solution: A platform for finding travel partners based on destinations, budgets, and interests.
-Features:
-- Shared itineraries and budgeting tools.
+- Features: Shared itineraries and budgeting tools.
 - Compatibility matching for travel preferences.
 - Group discounts for accommodations and tickets.
