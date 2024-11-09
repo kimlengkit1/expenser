@@ -24,11 +24,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="explore"
+        name="createExpense"
         options={{
-          title: 'Explore',
+          title: 'Create Expense',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon iconType="Ionicons" name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+            <TabBarIcon iconType="AntDesign" name={focused ? 'pluscircle' : 'pluscircleo'} color={color} />
           ),
         }}
       />
