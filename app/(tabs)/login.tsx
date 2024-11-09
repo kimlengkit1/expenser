@@ -117,7 +117,8 @@
 import { createClient } from '@supabase/supabase-js';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
-// import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import {router} from 'expo-router';
 
 const supabase = createClient(
   'https://fwjbiqwejzeecsraqqsg.supabase.co',
@@ -125,16 +126,19 @@ const supabase = createClient(
 );
 
 export default function Login() {
+  // const navigate = useNavigate();
   supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN') {
+    if (event === 'SIGNED_IN') { 
       const user = session?.user;
 
       if (user?.app_metadata?.provider === null) {
         console.log('New user signed up:', user);
         // Optional: navigate to a welcome or onboarding page
-        // navigate("/welcome");
+        router.push("/");
+        // navigate("/");
       } else {
         console.log('User signed in:', user);
+        router.push("/");
         // navigate("/");
       }
     } else if (event === 'SIGNED_OUT') {
