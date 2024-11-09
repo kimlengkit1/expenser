@@ -26,7 +26,7 @@ Features:
 - Ingredient swap board (e.g., “I have pasta, need sauce”).
 - Expense tracking for shared groceries
 
-# BuddyTrip: Find Travel Partners
+## BuddyTrip: Find Travel Partners
 - Tagline: "Explore together, save together."
 - Problem: Many students avoid trips due to lack of travel companions or high costs.
 - Solution: A platform for finding travel partners based on destinations, budgets, and interests.
