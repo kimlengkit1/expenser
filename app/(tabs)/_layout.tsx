@@ -19,7 +19,7 @@ export default function TabLayout() {
         options={{
           title: 'Home',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'home' : 'home-outline'} color={color} />
+            <TabBarIcon iconType="Ionicons" name={focused ? 'home' : 'home-outline'} color={color} />
           ),
         }}
       />
@@ -28,7 +28,16 @@ export default function TabLayout() {
         options={{
           title: 'Explore',
           tabBarIcon: ({ color, focused }) => (
-            <TabBarIcon name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+            <TabBarIcon iconType="Ionicons" name={focused ? 'code-slash' : 'code-slash-outline'} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="login"
+        options={{
+          title: 'Login',
+          tabBarIcon: ({ color, focused }) => (
+            <TabBarIcon iconType="MaterialCommunityIcons" name={focused ? 'account-circle' : 'account-circle-outline'} color={color} />
           ),
         }}
       />
