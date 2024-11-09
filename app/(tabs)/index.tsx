@@ -1,24 +1,23 @@
 import { Image, View, Text, StyleSheet, Button, Alert} from 'react-native';
+import {useState} from 'react';
 
 
 
 export default function HomeScreen() {
+  const [isLogIn, setLogIn] = useState(true);
   return (
     <View style={styles.center}>
+      {isLogIn ? 
+      (<>
       <Text style={styles.red} >
         Hi!
       </Text>
-      <Button title="Press Me" onPress={()=>
-        Alert.alert(
-          "Chris",
-          "topher Chen~",
-          [
-            { text: "Chest", onPress: () => console.log("Chest pressed") },
-            { text: "Leg", onPress: () => console.log("Leg pressed") }
-          ]
-        )
-        
-      } color="red"/>
+      <Button title="Press Me" color="red"/>
+      </>) : 
+      (<>
+      <Text>Not logged in..</Text>
+      </>)
+      }
     </View>
   );
 }
