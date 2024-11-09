@@ -21,16 +21,16 @@ export function TabBarIcon({ style, iconType, name, ...rest }: TabBarIconProps) 
   // Icon rendering logic
   switch (iconType) {
     case 'Ionicons':
-      return <Ionicons name={name} size={24} color="black" />
+      return <Ionicons name={name} size={28} color="black" />
       //<Ionicons size={28} style={[{ marginBottom: -3 }, style]} {...rest} />;
     case 'MaterialIcons':
-      return <MaterialCommunityIcons name="account-circle" size={24} color="black" />
+      return <MaterialIcons name={name} size={28} color="black" />
       //<MaterialIcons size={28} style={[{ marginBottom: -3 }, style]} {...rest} />;
     case 'MaterialCommunityIcons':
-      return <MaterialCommunityIcons name="account-circle-outline" size={24} color="black" />
+      return <MaterialCommunityIcons name={name} size={28} color="black" />
       //<MaterialCommunityIcons size={28} style={[{ marginBottom: -3 }, style]} {...rest} />;
     default:
-      return <Ionicons name="home" size={24} color="black" />
+      return <Ionicons name="home" size={28} color="black" />
       //<Ionicons size={28} style={[{ marginBottom: -3 }, style]} {...rest} />;
   }
 }
