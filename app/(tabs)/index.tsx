@@ -1,6 +1,7 @@
 import { Image, StyleSheet, Platform, Text, View, TouchableOpacity, FlatList, Modal } from 'react-native';
 import { useState } from 'react';
 import { Divider } from "react-native-elements";
+import React from 'react';
 
 // Define the type for each purchaser's share of an item
 type Purchaser = {
@@ -74,6 +75,13 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
   const [showReceipt, setShowReceipt] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
+  // Ensure both toggles are reset on close
+  const handleClose = () => {
+    setShowReceipt(false);
+    setShowBreakdown(false);
+    onClose();
+  };
+
   if (!transaction) return null;
 
   // Calculate total paid by each person
@@ -85,13 +93,12 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
       const amount = parseFloat(price.replace('$', '').trim());
 
       item.purchasedBy.forEach(purchaser => {
-        const individualShare = (amount *1.07 * purchaser.share) / 100;
+        const individualShare = (amount * 1.07 * purchaser.share) / 100;
         if (!totals[purchaser.name]) {
           totals[purchaser.name] = 0;
         }
         totals[purchaser.name] += individualShare;
       });
-      
     });
 
     return totals;
@@ -104,7 +111,7 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
       animationType="slide"
       transparent={true}
       visible={visible}
-      onRequestClose={onClose}
+      onRequestClose={handleClose} // Reset toggles on modal close
     >
       <View style={styles.modalOverlay}>
         <View style={styles.popupContainer}>
@@ -116,7 +123,7 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
                 {/* Header */}
                 <View style={styles.popupHeader}>
                   <Text style={styles.popupTitle}>Transaction Details</Text>
-                  <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                  <TouchableOpacity style={styles.closeButton} onPress={handleClose}>
                     <Text style={styles.closeButtonText}>×</Text>
                   </TouchableOpacity>
                 </View>
@@ -145,7 +152,6 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
                     <Text style={styles.detailValue}>{transaction.date}</Text>
                   </View>
 
-
                   <View style={styles.detailRow}>
                     <Text style={styles.detailLabel}>Merchant</Text>
                     <Text style={styles.detailValue}>{transaction.merchant}</Text>
@@ -167,32 +173,32 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
                   {showReceipt && transaction.receiptItems && (
                     <View style={styles.receiptContainer}>
                       <Text style={styles.receiptTitle}>Receipt Items</Text>
-                        <FlatList
-                          data={transaction.receiptItems}
-                          keyExtractor={(item, index) => index.toString()}
-                          renderItem={({ item }) => {
-                            const [itemText, price] = item.description.split(/(?=\$\d+)/);
-                            return (
-                              <View style={styles.receiptItem}>
-                                {/* Item description and price on the same row */}
-                                <View style={styles.itemRow}>
-                                  <Text style={styles.itemText}>{itemText.trim()}</Text>
-                                  <Text style={styles.itemPrice}>{price.trim()}</Text>
-                                </View>
-
-                                {/* Purchasers listed below the item */}
-                                <Text style={styles.purchasersText}>
-                                  {item.purchasedBy.map((purchaser, index) => (
-                                    <Text key={index}>
-                                      {purchaser.name}
-                                      {index < item.purchasedBy.length - 1 ? ', ' : ''}
-                                    </Text>
-                                  ))}
-                                </Text>
+                      <FlatList
+                        data={transaction.receiptItems}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({ item }) => {
+                          const [itemText, price] = item.description.split(/(?=\$\d+)/);
+                          return (
+                            <View style={styles.receiptItem}>
+                              {/* Item description and price on the same row */}
+                              <View style={styles.itemRow}>
+                                <Text style={styles.itemText}>{itemText.trim()}</Text>
+                                <Text style={styles.itemPrice}>{price.trim()}</Text>
                               </View>
-                            );
-                          }}
-                        />
+
+                              {/* Purchasers listed below the item */}
+                              <Text style={styles.purchasersText}>
+                                {item.purchasedBy.map((purchaser, index) => (
+                                  <Text key={index}>
+                                    {purchaser.name}
+                                    {index < item.purchasedBy.length - 1 ? ', ' : ''}
+                                  </Text>
+                                ))}
+                              </Text>
+                            </View>
+                          );
+                        }}
+                      />
                       <Divider style={styles.popupDivider} color="#E0E0E0" />
                       <View style={styles.receiptSummary}>
                         <Text style={styles.summaryLabel}>Subtotal:</Text>
@@ -232,7 +238,7 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
             )}
             ListFooterComponent={() => (
               <View style={styles.popupFooter}>
-                <TouchableOpacity style={styles.closeFullButton} onPress={onClose}>
+                <TouchableOpacity style={styles.closeFullButton} onPress={handleClose}>
                   <Text style={styles.closeFullButtonText}>Close</Text>
                 </TouchableOpacity>
               </View>
@@ -241,9 +247,9 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
         </View>
       </View>
     </Modal>
-    
   );
 };
+
 export default function HomeScreen() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
