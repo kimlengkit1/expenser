@@ -68,11 +68,11 @@ export const styles = StyleSheet.create({
     left: 20,
   },
   headerText: {
-    fontSize: 24,
+    fontSize: Platform.OS == 'web' ? 35 : 24,
     fontWeight: 'bold',
     textAlign: 'center',
     color: 'white',
-    marginTop: 20,
+    marginTop: 10,
   },
   headerDivider: {
     width: '100%',
