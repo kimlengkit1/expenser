@@ -4,7 +4,6 @@ import { Ionicons } from '@expo/vector-icons';
 
 // Import screens
 import HomeScreen from './index';
-import BillScreen from './PrevBills';
 
 const Tab = createBottomTabNavigator();
 
@@ -22,7 +21,6 @@ export default function TabsLayout() {
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="Bills" component={BillScreen} />
     </Tab.Navigator>
   );
 }
