@@ -35,7 +35,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="login"
         options={{
-          title: 'Login',
+          title: 'Account',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon iconType="MaterialCommunityIcons" name={focused ? 'account-circle' : 'account-circle-outline'} color={color} />
           ),
