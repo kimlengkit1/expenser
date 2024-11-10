@@ -14,7 +14,7 @@ export function CustomAddButton({ onPress }: { onPress: () => void }) {
   return (
     <View style={styles.backgroundContainer}>
       <TouchableOpacity onPress={onPress} style={styles.button}>
-        <Ionicons name="add-circle-outline" size={40} color="#34c759" />
+        <Ionicons name="add-circle-outline" size={Platform.OS === 'web'? 80:40} color="#34c759" />
       </TouchableOpacity>
     </View>
   );
@@ -22,11 +22,11 @@ export function CustomAddButton({ onPress }: { onPress: () => void }) {
 
 const styles = StyleSheet.create({
   backgroundContainer: {
-     // Adjust position above the tab bar    
-    top: Platform.OS == 'web' ? 15:0,        // Center the button horizontally
+     // Adjust position above the tab bar  
+     bottom: Platform.OS == 'web' ? 30:0,         
     backgroundColor: '#1a1a1a',              // Matches tab bar color
-    height: 40,                              // Circular background size
-    width: 40,
+    height: Platform.OS == 'web' ? 80:40,                               // Circular background size
+    width: Platform.OS == 'web' ? 80:40, 
     borderRadius: 40,                        // Half of height/width for a circular shape
     justifyContent: 'center',
     alignItems: 'center',
