@@ -1,12 +1,21 @@
-import { useSearchParams } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 
 export default function UserPage() {
-  const { userId } = useSearchParams(); // Extract dynamic parameter
+  const { userId } = useLocalSearchParams(); // Extract dynamic route parameter
+
+  if (!userId) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.error}>No userId provided!</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Welcome, User {userId}!</Text>
+      <Text>Your personalized content goes here.</Text>
     </View>
   );
 }
@@ -21,5 +30,9 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     marginBottom: 16,
+  },
+  error: {
+    fontSize: 16,
+    color: 'red',
   },
 });

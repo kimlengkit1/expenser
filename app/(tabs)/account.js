@@ -69,10 +69,12 @@ const AuthScreen = ({ email, setEmail, password, setPassword, isLogin, setIsLogi
     useEffect(() => {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         if (user) {
-          setUser(user);
-          router.push('/');
+          router.replace(`/users/${user.uid}`);
+          // setUser(user);
+          // router.push('/');
         } else {
-          setUser(null);
+          router.replace('/login');
+          // setUser(null);
         }
       });
   
@@ -94,12 +96,14 @@ const AuthScreen = ({ email, setEmail, password, setPassword, isLogin, setIsLogi
             // Sign in
             await signInWithEmailAndPassword(auth, email, password);
             console.log('User signed in successfully!');
-            router.push('/');
+            router.replace(`/users/${user.uid}`);
+            // router.push('/');
           } else {
             // Sign up
             await createUserWithEmailAndPassword(auth, email, password);
             console.log('User created successfully!');
-            router.push('/');
+            router.replace(`/users/${user.uid}`);
+            // router.push('/');
           }
         }
       } catch (error) {
