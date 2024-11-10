@@ -7,14 +7,36 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 import React from 'react';
+import { useState, useEffect } from 'react';
+
+import SecureDBGateway, { IUserInfo } from '../../lib/localDB';
+
+
+
 
 export default function TabTwoScreen() {
+  const [userInfo, setUserInfo] = useState<IUserInfo | null>(null);
+
+  const loadUserInfo = async () => {
+    const userInf = await SecureDBGateway.load();
+    if (userInf && userInf !== null) {
+      setUserInfo(userInf);
+    }
+    console.log("User Info: ", userInf);
+    console.log("Saved User Info: ", userInfo);
+  }
+
+  useEffect(() => {
+    loadUserInfo();
+  }, []);
+
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
       headerImage={<Ionicons size={310} name="code-slash" style={styles.headerImage} />}>
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
+        <ThemedText type="title">Explore {userInfo ? userInfo.email : null}</ThemedText>
       </ThemedView>
       <ThemedText>This app includes example code to help you get started.</ThemedText>
       <Collapsible title="File-based routing">
