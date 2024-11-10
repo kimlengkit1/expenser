@@ -482,7 +482,7 @@ export default function HomeScreen() {
           <View style={styles.content}>
             <View style={styles.transactionList}>
               <FlatList
-                data={sampleTransactions}
+                data={transactions}
                 renderItem={renderTransactionItem}
                 keyExtractor={item => item.id}
                 showsVerticalScrollIndicator={false}
