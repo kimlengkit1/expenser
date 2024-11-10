@@ -1,18 +1,20 @@
 import { Image, StyleSheet, Platform, Text, View, TouchableOpacity, FlatList, Modal } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Divider } from "react-native-elements";
 import React from 'react';
+import { getAuth, onAuthStateChanged } from '@firebase/auth';
+import { router } from 'expo-router';
 
 // Define the type for each purchaser's share of an item
 type Purchaser = {
-  name: string; // e.g., "Alice"
-  share: number; // Percentage share of the item, e.g., 50 for 50%
+  name: string;
+  share: number;
 };
 
 // Define the type for a receipt item
 type ReceiptItem = {
-  description: string; // e.g., "2x Apples $6.00"
-  purchasedBy: Purchaser[]; // Array of people splitting this item
+  description: string;
+  purchasedBy: Purchaser[];
 };
 
 // Define the type for a transaction
@@ -31,39 +33,40 @@ type Transaction = {
 
 // Sample transaction data.
 const sampleTransactions: Transaction[] = [
-  {
-    id: '1',
-    title: 'Grocery Shopping',
-    amount: 85.00,
-    date: '2024-11-09',
-    merchant: 'Whole Foods',
-    description: 'Weekly grocery shopping',
-    receiptItems: [
-      { description: "2x Apples $6.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Bob", share: 50 }] },
-      { description: "1x Bread $2.50", purchasedBy: [{ name: "Alice", share: 100 }] },
-      { description: "1x Milk $4.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Charlie", share: 50 }] },
-    ],
-    subtotal: 75.00,
-    tax: 10.50,
-    total: 85.50,
-  },
-  {
-    id: '2',
-    title: 'Big Back Activity',
-    amount: 128.40,
-    date: '2024-11-09',
-    merchant: 'McDonalds',
-    description: 'big back big back',
-    receiptItems: [
-      { description: "100x Chicken Nuggets $50.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Benson", share: 50 }] },
-      { description: "20x McChk Sndwch $60.00", purchasedBy: [{ name: "Alice", share: 50 },{ name: "Benson", share: 50 }] },
-      { description: "5x Lg Coke $10.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Charlie", share: 50 }] },
-    ],
-    subtotal: 120.00,
-    tax: 8.40,
-    total: 128.40,
-  },
-];
+    {
+      id: '1',
+      title: 'Grocery Shopping',
+      amount: 85.00,
+      date: '2024-11-09',
+      merchant: 'Whole Foods',
+      description: 'Weekly grocery shopping',
+      receiptItems: [
+        { description: "2x Apples $6.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Bob", share: 50 }] },
+        { description: "1x Bread $2.50", purchasedBy: [{ name: "Alice", share: 100 }] },
+        { description: "1x Milk $4.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Charlie", share: 50 }] },
+      ],
+      subtotal: 75.00,
+      tax: 10.50,
+      total: 85.50,
+    },
+    {
+      id: '2',
+      title: 'Big Back Activity',
+      amount: 128.40,
+      date: '2024-11-09',
+      merchant: 'McDonalds',
+      description: 'big back big back',
+      receiptItems: [
+        { description: "100x Chicken Nuggets $50.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Benson", share: 50 }] },
+        { description: "20x McChk Sndwch $60.00", purchasedBy: [{ name: "Alice", share: 50 },{ name: "Benson", share: 50 }] },
+        { description: "5x Lg Coke $10.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Charlie", share: 50 }] },
+      ],
+      subtotal: 120.00,
+      tax: 8.40,
+      total: 128.40,
+    },
+  ];
+  
 
 type TransactionPopupProps = {
   visible: boolean;
@@ -75,7 +78,6 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
   const [showReceipt, setShowReceipt] = useState(false);
   const [showBreakdown, setShowBreakdown] = useState(false);
 
-  // Ensure both toggles are reset on close
   const handleClose = () => {
     setShowReceipt(false);
     setShowBreakdown(false);
@@ -87,11 +89,9 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
   // Calculate total paid by each person
   const calculateTotalsByPerson = () => {
     const totals: { [key: string]: number } = {};
-
     transaction.receiptItems?.forEach(item => {
       const [_, price] = item.description.split(/(?=\$\d+)/);
       const amount = parseFloat(price.replace('$', '').trim());
-
       item.purchasedBy.forEach(purchaser => {
         const individualShare = (amount * 1.07 * purchaser.share) / 100;
         if (!totals[purchaser.name]) {
@@ -100,22 +100,16 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
         totals[purchaser.name] += individualShare;
       });
     });
-
     return totals;
   };
 
   const totalsByPerson = calculateTotalsByPerson();
 
   return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={handleClose} // Reset toggles on modal close
-    >
+    <Modal animationType="slide" transparent={true} visible={visible} onRequestClose={handleClose}>
       <View style={styles.modalOverlay}>
         <View style={styles.popupContainer}>
-          <FlatList
+        <FlatList
             data={[{}]} // Dummy data to wrap entire content as a single item
             keyExtractor={(_, index) => index.toString()}
             renderItem={() => (
@@ -253,6 +247,16 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
 export default function HomeScreen() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handleTransactionPress = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
@@ -260,10 +264,7 @@ export default function HomeScreen() {
   };
 
   const renderTransactionItem = ({ item }: { item: Transaction }) => (
-    <TouchableOpacity 
-      style={styles.transactionItem}
-      onPress={() => handleTransactionPress(item)}
-    >
+    <TouchableOpacity style={styles.transactionItem} onPress={() => handleTransactionPress(item)}>
       <View style={styles.transactionRow}>
         <View style={styles.transactionLeft}>
           <Text style={styles.transactionTitle}>{item.title}</Text>
@@ -281,40 +282,72 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Image
-          source={require('@/assets/images/expenserlogo.png')}
-          style={styles.Logo}
-        />
-        <Text style={styles.headerText}>Transactions</Text>
-        <Divider
-          style={styles.headerDivider}
-          color="white"
-          width={1}
-          orientation="horizontal"
-        />
-      </View>
-
-      <View style={styles.content}>
-        <View style={styles.transactionList}>
-          <FlatList
-            data={sampleTransactions}
-            renderItem={renderTransactionItem}
-            keyExtractor={item => item.id}
-            showsVerticalScrollIndicator={false}
-          />
+      {isAuthenticated ? (
+        <>
+          <View style={styles.header}>
+            <Image source={require('@/assets/images/expenserlogo.png')} style={styles.Logo} />
+            <Text style={styles.headerText}>Transactions</Text>
+            <Divider style={styles.headerDivider} color="white" width={1} orientation="horizontal" />
+          </View>
+          <View style={styles.content}>
+            <View style={styles.transactionList}>
+              <FlatList
+                data={sampleTransactions}
+                renderItem={renderTransactionItem}
+                keyExtractor={item => item.id}
+                showsVerticalScrollIndicator={false}
+              />
+            </View>
+            <TransactionPopup
+              visible={modalVisible}
+              transaction={selectedTransaction}
+              onClose={() => setModalVisible(false)}
+            />
+          </View>
+        </>
+      ) : (
+        <View style={styles.loginPrompt}>
+          <View style={styles.logoContainer}>
+            <Image source={require('@/assets/images/expenserlogo.png')} style={styles.loginLogo} />
+          </View>
+          {/* Optional: Add a button to navigate to login screen */}
+          <TouchableOpacity style={styles.loginButton} onPress={() => router.push('../login')}>
+            <Text style={styles.loginButtonText}>Log In</Text>
+          </TouchableOpacity>
         </View>
-
-        <TransactionPopup
-          visible={modalVisible}
-          transaction={selectedTransaction}
-          onClose={() => setModalVisible(false)}
-        />
-      </View>
+      )}
     </View>
   );
 }
 const styles = StyleSheet.create({
+  logoContainer: {
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    marginBottom: 30, // Add some space between the logo and the prompt
+    width: '100%',
+    position: 'absolute',
+    top: 60, // Adjust this value to control how far from the top the logo appears
+  },
+  loginLogo: {
+    width: 250,
+    height: 200,
+  },
+  loginPrompt: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loginButton: {
+    backgroundColor: '#6dba65',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  loginButtonText: {
+    color: 'white',
+    fontSize: 30,
+    fontWeight: 'bold',
+  },
   receiptItem: {
     marginBottom: 10,
   },
