@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, ScrollView } from 'react-native';
 import { initializeApp } from '@firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from '@firebase/auth';
+import {router} from 'expo-router';
 
 
 const firebaseConfig = {
@@ -67,7 +68,12 @@ const AuthScreen = ({ email, setEmail, password, setPassword, isLogin, setIsLogi
     const auth = getAuth(app);
     useEffect(() => {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
-        setUser(user);
+        if (user) {
+          setUser(user);
+          router.push('/');
+        } else {
+          setUser(null);
+        }
       });
   
       return () => unsubscribe();
@@ -80,16 +86,20 @@ const AuthScreen = ({ email, setEmail, password, setPassword, isLogin, setIsLogi
           // If user is already authenticated, log out
           console.log('User logged out successfully!');
           await signOut(auth);
+          setUser(null);
+          router.replace('/login');
         } else {
           // Sign in or sign up
           if (isLogin) {
             // Sign in
             await signInWithEmailAndPassword(auth, email, password);
             console.log('User signed in successfully!');
+            router.push('/');
           } else {
             // Sign up
             await createUserWithEmailAndPassword(auth, email, password);
             console.log('User created successfully!');
+            router.push('/');
           }
         }
       } catch (error) {
