@@ -14,7 +14,7 @@ import * as ImagePicker from 'expo-image-picker';
 
 import { router } from 'expo-router';
 
-import mockData from "../../constants/sample-data.json";
+export let data = {store: "", date: "", items: [], subtotal: 0, tax: 0, total: 0}; 
 
 export default function CreateExpense() {
   const [image, setImage] = useState<string | null>(null);
@@ -38,38 +38,41 @@ export default function CreateExpense() {
   };
 
   const parseReceipt = async () => {
-    console.log('parsing receipt');
-    // console.log(`uri: ${image}`);
-
-    // const mockData = await fetch('../../constants/sample-data.json')
-    // .then((response) => response.json())
-    // .catch((error) => console.error(error));
-    // .then((json) => console.log(json));
-
-    console.log("mock data: " + mockData.store);
-
+    console.log('Parsing receipt');
+  
+    if (!image) {
+      console.log('No image selected');
+      return;
+    }
+  
+    try {
+      // Fetch the image URI as a Blob
+      const response = await fetch(image);
+      const blob = await response.blob();
+  
+      // Create a new FormData object and append the Blob with a filename and MIME type
+      const formData = new FormData();
+      formData.append('image', blob, 'receipt.jpg'); // 'receipt.jpg' is the filename
+  
+      const uploadResponse = await fetch('http://127.0.0.1:5000/upload', {
+        method: 'POST',
+        body: formData, // Send the FormData directly as the body
+      });
+  
+      // Handle the response from the backend
+      if (uploadResponse.ok) {
+        data = await uploadResponse.json();
+        console.log('Response from server:', data);
+      } else {
+        console.error('Failed to upload image:', uploadResponse.statusText);
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+    }
+  
+    // Navigate to the next screen
     router.push('/(creation)/splitEach');
-
-    // return (
-    //   <SplitEach data={JSON.stringify(mockData)} />
-    // );
   };
-    // fetch('http://localhost:5000/parseReceipt', {
-    //   method: 'POST',
-    //   headers: {
-    //     Accept: 'application/json',
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     image: image,
-    //   }),
-    // })
-    //   .then((response) => response.json())
-    //   .then((json) => {
-    //     console.log(json);
-    //   })
-
-
 
   return (
     <View style={styles.container}>

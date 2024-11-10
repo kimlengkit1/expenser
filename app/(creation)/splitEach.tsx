@@ -5,8 +5,8 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
-import mockData from "../../constants/sample-data.json";
-
+// import mockData from "../../constants/sample-data.json";
+import { data as mockData } from "../(tabs)/createExpense";
 
 export default function SplitEach() {
 // export default function SplitEach({ data }: { data: string }) {
@@ -14,8 +14,9 @@ export default function SplitEach() {
     return (<>
         <Text>{mockData.store}</Text>
         <Text>{mockData.date}</Text>
-        <Text>{mockData.total}</Text>
         <Text>{JSON.stringify(mockData.items)}</Text>
-        <Text>{JSON.stringify(mockData)}</Text>
+        <Text>{mockData.subtotal}</Text>
+        <Text>{mockData.tax}</Text>
+        <Text>{mockData.total}</Text>
     </>);
 }

@@ -7,6 +7,8 @@ from flask import Flask, request, jsonify
 from PIL import Image
 import io
 
+from flask_cors import CORS
+
 load_dotenv()
 
 # Configure the API client with the API key
@@ -38,7 +40,7 @@ model = genai.GenerativeModel(
 def generate_response_image(img):
     # Open the image file using PIL
     
-    instruction = "format this into a json file for this receipt with just the prices along with the name, dont give me any response other than the JSON. Format it as {'store': 'tempName', 'date': 'tempDate', 'items': [{name: example1, predicted name: 'predicted name example1', price: 0}, {name: example2, predicted name: 'predicted name example2', price: 0}], 'subtotal: 0, tax: 0, total: 0'}"
+    instruction = "format this into a json file for this receipt with just the prices along with the name, dont give me any response other than the JSON. Format it as {'store': 'tempName', 'date': 'tempDate', 'items': [{name: example1, price: 0}, {name: example2, price: 0}], 'subtotal: 0, tax: 0, total: 0'}"
 
     # Generate content with streaming enabled
     response = model.generate_content([instruction, img], stream=True)
@@ -63,6 +65,8 @@ def convert_single_to_double_quotes(input_string):
 
 # Initialize Flask app
 app = Flask(__name__)
+CORS(app)  # This allows all domains to access your backend
+
 
 @app.route('/upload', methods=['POST'])
 def upload_image():
