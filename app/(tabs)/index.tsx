@@ -167,28 +167,32 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
                   {showReceipt && transaction.receiptItems && (
                     <View style={styles.receiptContainer}>
                       <Text style={styles.receiptTitle}>Receipt Items</Text>
-                      <FlatList
-                        data={transaction.receiptItems}
-                        keyExtractor={(item, index) => index.toString()}
-                        renderItem={({ item }) => {
-                          const [itemText, price] = item.description.split(/(?=\$\d+)/);
-                          return (
-                            <View style={styles.receiptItem}>
-                              <Text style={styles.itemText}>{itemText.trim()}</Text>
-                              <Text style={styles.splitInfo}>
-                                {item.purchasedBy.map((purchaser, index) => (
-                                  <Text key={index}>
-                                    {purchaser.name}
-                                    {index < item.purchasedBy.length - 1 ? ', ' : ''}
-                                  </Text>
-                                ))}
-                              </Text>
-                              <Text style={styles.itemPrice}>{price.trim()}</Text>
-                              
-                            </View>
-                          );
-                        }}
-                      />
+                        <FlatList
+                          data={transaction.receiptItems}
+                          keyExtractor={(item, index) => index.toString()}
+                          renderItem={({ item }) => {
+                            const [itemText, price] = item.description.split(/(?=\$\d+)/);
+                            return (
+                              <View style={styles.receiptItem}>
+                                {/* Item description and price on the same row */}
+                                <View style={styles.itemRow}>
+                                  <Text style={styles.itemText}>{itemText.trim()}</Text>
+                                  <Text style={styles.itemPrice}>{price.trim()}</Text>
+                                </View>
+
+                                {/* Purchasers listed below the item */}
+                                <Text style={styles.purchasersText}>
+                                  {item.purchasedBy.map((purchaser, index) => (
+                                    <Text key={index}>
+                                      {purchaser.name}
+                                      {index < item.purchasedBy.length - 1 ? ', ' : ''}
+                                    </Text>
+                                  ))}
+                                </Text>
+                              </View>
+                            );
+                          }}
+                        />
                       <Divider style={styles.popupDivider} color="#E0E0E0" />
                       <View style={styles.receiptSummary}>
                         <Text style={styles.summaryLabel}>Subtotal:</Text>
@@ -305,6 +309,29 @@ export default function HomeScreen() {
   );
 }
 const styles = StyleSheet.create({
+  receiptItem: {
+    marginBottom: 10,
+  },
+  itemRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 5,
+  },
+  itemText: {
+    color: '#BDBDBD',
+    fontSize: 15,
+  },
+  itemPrice: {
+    color: 'white',
+    fontSize: 15,
+    textAlign: 'right',
+  },
+  purchasersText: {
+    color: '#BDBDBD',
+    fontSize: 13,
+    marginTop: 2,
+    marginLeft: 5,
+  },
   scrollContent: {
     paddingBottom: 20,
   },
@@ -332,20 +359,6 @@ const styles = StyleSheet.create({
   itemDescription: {
     color: '#BDBDBD',
     fontSize: 15,
-  },
-  receiptItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 5,
-  },
-  itemText: {
-    color: '#BDBDBD',
-    fontSize: 15,
-  },
-  itemPrice: {
-    color: 'white',
-    fontSize: 15,
-    textAlign: 'right',
   },
   container: {
     flex: 1,
