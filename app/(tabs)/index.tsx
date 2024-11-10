@@ -1,7 +1,11 @@
 import { Image, StyleSheet, Platform, Text, View, TouchableOpacity, FlatList, Modal } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Divider } from "react-native-elements";
 import React from 'react';
+
+import SecureDBGateway, { IUserInfo } from '../../lib/localDB';
+import { collection, query, where, getDocs, getFirestore } from "firebase/firestore";
+import { getDatabase, set } from "firebase/database";
 
 // Define the type for each purchaser's share of an item
 type Purchaser = {
@@ -254,6 +258,34 @@ export default function HomeScreen() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const [transactions, setTransactions] = useState<Transaction[]>(sampleTransactions);
+
+  
+  
+  // const [userInfo, setUserInfo] = useState<IUserInfo | null>(null);
+
+  const loadUserInfo = async () => {
+    const userInf = await SecureDBGateway.load();
+    if (userInf && userInf !== null) {
+      // setUserInfo(userInf);
+      const db = getFirestore();
+      const q = query(collection(db, "transactions"), where("uid", "==", userInf.id));
+      const querySnapshot = await getDocs(q);
+      querySnapshot.forEach((doc) => {
+        console.log(`${doc.id} => ${doc.data()}`);
+      });
+      setTransactions(querySnapshot.docs.map(doc => doc.data()) as Transaction[]);
+    }
+    console.log("User Info: ", userInf);
+    // console.log("Saved User Info: ", userInfo);
+
+  }
+
+  useEffect(() => {
+    loadUserInfo();
+  }, []);
+
+
   const handleTransactionPress = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
     setModalVisible(true);
@@ -298,7 +330,7 @@ export default function HomeScreen() {
       <View style={styles.content}>
         <View style={styles.transactionList}>
           <FlatList
-            data={sampleTransactions}
+            data={transactions}
             renderItem={renderTransactionItem}
             keyExtractor={item => item.id}
             showsVerticalScrollIndicator={false}
