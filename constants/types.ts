@@ -1,5 +1,6 @@
 export type ReceiptItem = {
     description: string; // e.g., "2x Apples $6.00"
+    purchasedBy: string; // e.g., "Alice"
   };
   
   // Define the type for a transaction

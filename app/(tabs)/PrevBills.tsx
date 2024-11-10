@@ -1,7 +1,7 @@
-import { Image, StyleSheet, Platform, Text, View, TouchableOpacity, FlatList, Modal } from 'react-native';
+import { Image, StyleSheet, Platform, Text, View, TouchableOpacity, FlatList, Modal, ScrollView } from 'react-native';
 import { useState } from 'react';
 import { Divider } from 'react-native-elements';
-import { ReceiptItem, Transaction, TransactionPopupProps } from '../../components/types'
+import { ReceiptItem, Transaction, TransactionPopupProps } from '../../constants/types'
 
 // Define the type for a receipt item
 // Sample transaction data
@@ -16,9 +16,9 @@ const sampleTransactions: Transaction[] = [
     paymentMethod: 'Credit Card',
     description: 'Weekly grocery shopping',
     receiptItems: [
-      { description: "2x Apples $6.00" },
-      { description: "1x Bread $2.50" },
-      { description: "1x Milk $4.00" },
+      { description: "2x Apples $6.00", purchasedBy: "Alice" },
+      { description: "1x Bread $2.50", purchasedBy: "Bob"},
+      { description: "1x Milk $4.00", purchasedBy: "Alice" },
     ],
     subtotal: 75.00,
     tax: 10.50,
@@ -29,11 +29,30 @@ const sampleTransactions: Transaction[] = [
 
 const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transaction, onClose }) => {
   const [showReceipt, setShowReceipt] = useState(false);
+  const [showBreakdown, setShowBreakdown] = useState(false);
 
   if (!transaction) return null;
 
+  // Calculate total paid by each person
+  const calculateTotalsByPerson = () => {
+    const totals: { [key: string]: number } = {};
+
+    transaction.receiptItems?.forEach(item => {
+      const [_, price] = item.description.split(/(?=\$\d+)/);
+      const amount = parseFloat(price.replace('$', '').trim());
+      if (!totals[item.purchasedBy]) {
+        totals[item.purchasedBy] = 0;
+      }
+      totals[item.purchasedBy] += amount;
+    });
+
+    return totals;
+  };
+
+  const totalsByPerson = calculateTotalsByPerson();
+
   return (
-    <Modal 
+    <Modal
       animationType="slide"
       transparent={true}
       visible={visible}
@@ -41,94 +60,119 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
     >
       <View style={styles.modalOverlay}>
         <View style={styles.popupContainer}>
-          {/* Header */}
-          <View style={styles.popupHeader}>
-            <Text style={styles.popupTitle}>Transaction Details</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-              <Text style={styles.closeButtonText}>×</Text>
-            </TouchableOpacity>
-          </View>
-
-          <Divider style={styles.popupDivider} color="#E0E0E0" />
-
-          {/* Content */}
-          <View style={styles.popupContent}>
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Title</Text>
-              <Text style={styles.detailValue}>{transaction.title}</Text>
+          <ScrollView contentContainerStyle={styles.scrollContent}>
+            {/* Header */}
+            <View style={styles.popupHeader}>
+              <Text style={styles.popupTitle}>Transaction Details</Text>
+              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                <Text style={styles.closeButtonText}>×</Text>
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Total</Text>
-              <Text style={[
-                styles.detailValue,
-                { color: transaction.amount >= 0 ? '#4CAF50' : '#FF5252' }
-              ]}>
-                ${Math.abs(transaction.amount).toFixed(2)}
-              </Text>
-            </View>
+            <Divider style={styles.popupDivider} color="#E0E0E0" />
 
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Date</Text>
-              <Text style={styles.detailValue}>{transaction.date}</Text>
-            </View>
-
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Category</Text>
-              <Text style={styles.detailValue}>{transaction.category}</Text>
-            </View>
-
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Merchant</Text>
-              <Text style={styles.detailValue}>{transaction.merchant}</Text>
-            </View>
-
-            <View style={styles.detailRow}>
-              <Text style={styles.detailLabel}>Payment Method</Text>
-              <Text style={styles.detailValue}>{transaction.paymentMethod}</Text>
-            </View>
-
-            <View style={styles.descriptionRow}>
-              <Text style={styles.detailLabel}>Description</Text>
-              <Text style={styles.descriptionText}>{transaction.description}</Text>
-            </View>
-
-            {/* Toggle for Receipt Details */}
-            <TouchableOpacity onPress={() => setShowReceipt(!showReceipt)} style={styles.toggleButton}>
-              <Text style={styles.toggleButtonText}>
-                {showReceipt ? 'Hide Receipt Details' : 'Show Receipt Details'}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Receipt Details */}
-            {showReceipt && transaction.receiptItems && (
-              <View style={styles.receiptContainer}>
-                <Text style={styles.receiptTitle}>Receipt Items</Text>
-                <FlatList
-                  data={transaction.receiptItems}
-                  keyExtractor={(item, index) => index.toString()}
-                  renderItem={({ item }) => (
-                    <View style={styles.receiptItem}>
-                      <Text style={styles.itemDescription}>{item.description}</Text>
-                    </View>
-                  )}
-                />
-                <Divider style={styles.popupDivider} color="#E0E0E0" />
-                <View style={styles.receiptSummary}>
-                  <Text style={styles.summaryLabel}>Subtotal:</Text>
-                  <Text style={styles.summaryValue}>${transaction.subtotal?.toFixed(2)}</Text>
-                </View>
-                <View style={styles.receiptSummary}>
-                  <Text style={styles.summaryLabel}>Tax:</Text>
-                  <Text style={styles.summaryValue}>${transaction.tax?.toFixed(2)}</Text>
-                </View>
-                <View style={styles.receiptSummary}>
-                  <Text style={styles.summaryLabel}>Total:</Text>
-                  <Text style={styles.summaryValue}>${transaction.total?.toFixed(2)}</Text>
-                </View>
+            {/* Content */}
+            <View style={styles.popupContent}>
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Title</Text>
+                <Text style={styles.detailValue}>{transaction.title}</Text>
               </View>
-            )}
-          </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Total</Text>
+                <Text style={[
+                  styles.detailValue,
+                  { color: transaction.amount >= 0 ? '#4CAF50' : '#FF5252' }
+                ]}>
+                  ${Math.abs(transaction.amount).toFixed(2)}
+                </Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Date</Text>
+                <Text style={styles.detailValue}>{transaction.date}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Category</Text>
+                <Text style={styles.detailValue}>{transaction.category}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Merchant</Text>
+                <Text style={styles.detailValue}>{transaction.merchant}</Text>
+              </View>
+
+              <View style={styles.detailRow}>
+                <Text style={styles.detailLabel}>Payment Method</Text>
+                <Text style={styles.detailValue}>{transaction.paymentMethod}</Text>
+              </View>
+
+              <View style={styles.descriptionRow}>
+                <Text style={styles.detailLabel}>Description</Text>
+                <Text style={styles.descriptionText}>{transaction.description}</Text>
+              </View>
+
+              {/* Toggle for Receipt Details */}
+              <TouchableOpacity onPress={() => setShowReceipt(!showReceipt)} style={styles.toggleButton}>
+                <Text style={styles.toggleButtonText}>
+                  {showReceipt ? 'Hide Receipt Details' : 'Show Receipt Details'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Receipt Details */}
+              {showReceipt && transaction.receiptItems && (
+                <View style={styles.receiptContainer}>
+                  <Text style={styles.receiptTitle}>Receipt Items</Text>
+                  <FlatList
+                    data={transaction.receiptItems}
+                    keyExtractor={(item, index) => index.toString()}
+                    renderItem={({ item }) => {
+                      const [itemText, price] = item.description.split(/(?=\$\d+)/);
+                      return (
+                        <View style={styles.receiptItem}>
+                          <Text style={styles.itemText}>{itemText.trim()} ({item.purchasedBy})</Text>
+                          <Text style={styles.itemPrice}>{price.trim()}</Text>
+                        </View>
+                      );
+                    }}
+                  />
+                  <Divider style={styles.popupDivider} color="#E0E0E0" />
+                  <View style={styles.receiptSummary}>
+                    <Text style={styles.summaryLabel}>Subtotal:</Text>
+                    <Text style={styles.summaryValue}>${transaction.subtotal?.toFixed(2)}</Text>
+                  </View>
+                  <View style={styles.receiptSummary}>
+                    <Text style={styles.summaryLabel}>Tax:</Text>
+                    <Text style={styles.summaryValue}>${transaction.tax?.toFixed(2)}</Text>
+                  </View>
+                  <View style={styles.receiptSummary}>
+                    <Text style={styles.summaryLabel}>Total:</Text>
+                    <Text style={styles.summaryValue}>${transaction.total?.toFixed(2)}</Text>
+                  </View>
+                </View>
+              )}
+
+              {/* Toggle for Breakdown by Person */}
+              <TouchableOpacity onPress={() => setShowBreakdown(!showBreakdown)} style={styles.toggleButton}>
+                <Text style={styles.toggleButtonText}>
+                  {showBreakdown ? 'Hide Payment Breakdown' : 'Show Payment Breakdown'}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Breakdown by Person */}
+              {showBreakdown && (
+                <View style={styles.breakdownContainer}>
+                  {Object.entries(totalsByPerson).map(([person, total]) => (
+                    <View key={person} style={styles.breakdownRow}>
+                      <Text style={styles.personName}>{person}:</Text>
+                      <Text style={styles.personTotal}>${total.toFixed(2)}</Text>
+                    </View>
+                  ))}
+                </View>
+              )}
+            </View>
+          </ScrollView>
 
           {/* Footer */}
           <View style={styles.popupFooter}>
@@ -212,9 +256,42 @@ export default function HomeScreen() {
 
 // Styles (same as defined previously)
 const styles = StyleSheet.create({
+  scrollContent: {
+    paddingBottom: 20,
+  },
+  breakdownContainer: {
+    marginTop: 20,
+  },
+  breakdownRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 5,
+  },
+  personName: {
+    color: '#BDBDBD',
+    fontSize: 15,
+  },
+  personTotal: {
+    color: 'white',
+    fontSize: 15,
+  },
   itemDescription: {
     color: '#BDBDBD',
     fontSize: 15,
+  },
+  receiptItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 5,
+  },
+  itemText: {
+    color: '#BDBDBD',
+    fontSize: 15,
+  },
+  itemPrice: {
+    color: 'white',
+    fontSize: 15,
+    textAlign: 'right',
   },
   container: {
     flex: 1,
@@ -228,7 +305,7 @@ const styles = StyleSheet.create({
     width: 75,
     height: 50,
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 50 : 20,
+    top: Platform.OS === 'ios' ? 30 : 20,
     left: 20,
   },
   headerText: {
@@ -392,17 +469,8 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-  receiptItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 5,
-  },
   itemName: {
     color: '#BDBDBD',
-    fontSize: 15,
-  },
-  itemPrice: {
-    color: 'white',
     fontSize: 15,
   },
   receiptContainer: {
