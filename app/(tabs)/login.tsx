@@ -135,7 +135,10 @@ import { createClient } from '@supabase/supabase-js';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react'
 import {router} from 'expo-router';
+import { Session } from '@supabase/supabase-js';
+// import { Session } from '@supabase/gotrue-js/src/lib/types';
 
 
 const supabase = createClient(
@@ -143,43 +146,68 @@ const supabase = createClient(
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZ3amJpcXdlanplZWNzcmFxcXNnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzExNzgwOTMsImV4cCI6MjA0Njc1NDA5M30.ZW8tHCeuPbhYn7cMHMaVaAbMKa6Jvau2IXRS82ZM4v8'
 );
 
-export default function Login() {
-  // const navigate = useNavigate();
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_IN') { 
-      const user = session?.user;
+export default function App() {
+  const [session, setSession] = useState<Session | null>(null)
 
-      if (user?.app_metadata?.provider === null) {
-        console.log('New user signed up:', user);
-        // Optional: navigate to a welcome or onboarding page
-        router.push("/logged-in");
-      } else {
-        console.log('User signed in:', user);
-        router.push("/logged-in");
-      }
-    } else if (event === 'SIGNED_OUT') {
-      console.log('User signed out');
-    }
-  });
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session)
+    })
 
-  return (
-    <Auth
-      supabaseClient={supabase}
-      appearance={{ theme: ThemeSupa }}
-      theme="light"
-      providers={[]}
-      localization={{
-        variables: {
-          sign_up: {
-            email_label: 'Email Address',
-            password_label: 'Create a Password',
-            button_label: 'Sign Up',
-          },
-          sign_in: {
-            button_label: 'Sign In',
-          },
-        },
-      }}
-    />
-  );
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  if (!session) {
+    return (<Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />)
+  }
+  else {
+    router.push("/logged-in");
+  }
 }
+
+// export default function Login() {
+  // const navigate = useNavigate();
+//   supabase.auth.onAuthStateChange(async (event, session) => {
+//     if (event === 'SIGNED_IN') { 
+//       const user = session?.user;
+
+//       if (user?.app_metadata?.provider === null) {
+//         console.log('New user signed up:', user);
+//         // Optional: navigate to a welcome or onboarding page
+//         router.push("/logged-in");
+//       } else {
+//         console.log('User signed in:', user);
+//         router.push("/logged-in");
+//       }
+//     } else if (event === 'SIGNED_OUT') {
+//       console.log('User signed out');
+//     }
+//   });
+
+//   return (
+//     <Auth
+//       supabaseClient={supabase}
+//       appearance={{ theme: ThemeSupa }}
+//       theme="light"
+//       providers={[]}
+//       localization={{
+//         variables: {
+//           sign_up: {
+//             email_label: 'Email Address',
+//             password_label: 'Create a Password',
+//             button_label: 'Sign Up',
+//           },
+//           sign_in: {
+//             button_label: 'Sign In',
+//           },
+//         },
+//       }}
+//     />
+//   );
+// }
