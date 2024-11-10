@@ -11,6 +11,8 @@ npm-debug.*
 web-build/
 .vscode/
 
+%ProgramData%/
+
 # macOS
 .DS_Store
 
