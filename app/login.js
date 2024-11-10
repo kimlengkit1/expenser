@@ -4,6 +4,8 @@ import { initializeApp } from '@firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from '@firebase/auth';
 import {router} from 'expo-router';
 
+import SecureDBGateway from "../lib/localDB.ts";
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyBHZFFgouc4GDxhqoantd-jI5OvkMTYPTs",
@@ -79,6 +81,11 @@ const AuthScreen = ({ email, setEmail, password, setPassword, isLogin, setIsLogi
     useEffect(() => {
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         if (user) {
+          const u = {
+            uid: user.uid,
+            email: user.email,
+          };
+          SecureDBGateway.save(u); // FIX THIS IT DOESNT WORK
           setUser(user);
           router.push('/');
         } else {
@@ -95,6 +102,7 @@ const AuthScreen = ({ email, setEmail, password, setPassword, isLogin, setIsLogi
         if (user) {
           // If user is already authenticated, log out
           console.log('User logged out successfully!');
+          SecureDBGateway.delete();
           await signOut(auth);
           setUser(null);
           router.replace('/login');
