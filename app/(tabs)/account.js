@@ -6,15 +6,25 @@ import {router} from 'expo-router';
 
 import SecureDBGateway from "../../lib/localDB.ts";
 
+const firebaseConfigKK = {
+  apiKey: "AIzaSyBHZFFgouc4GDxhqoantd-jI5OvkMTYPTs",
+  authDomain: "expenser-3f0b3.firebaseapp.com",
+  projectId: "expenser-3f0b3",
+  storageBucket: "expenser-3f0b3.firebasestorage.app",
+  messagingSenderId: "1072306644873",
+  appId: "1:1072306644873:web:1d0a827f71c5064b3e2358",
+  measurementId: "G-YH3EFM8SQ0"
+};
+
 const firebaseConfig = {
-    apiKey: "AIzaSyBHZFFgouc4GDxhqoantd-jI5OvkMTYPTs",
-    authDomain: "expenser-3f0b3.firebaseapp.com",
-    projectId: "expenser-3f0b3",
-    storageBucket: "expenser-3f0b3.firebasestorage.app",
-    messagingSenderId: "1072306644873",
-    appId: "1:1072306644873:web:1d0a827f71c5064b3e2358",
-    measurementId: "G-YH3EFM8SQ0"
-  };
+    apiKey: "AIzaSyBZ0VXbZTBDxFHkphCz4MtB9GFZxi6BVxE",
+    authDomain: "expenser-c3ab3.firebaseapp.com",
+    projectId: "expenser-c3ab3",
+    storageBucket: "expenser-c3ab3.firebasestorage.app",
+    messagingSenderId: "565072002035",
+    appId: "1:565072002035:web:6e97f69df58273740df086",
+    measurementId: "G-MTLJ4GRYLE"
+};
 
 const app = initializeApp(firebaseConfig);
 
@@ -84,7 +94,7 @@ const AuthScreen = ({ email, setEmail, password, setPassword, isLogin, setIsLogi
       const unsubscribe = onAuthStateChanged(auth, (user) => {
         if (user) {
           const u = {
-            uid: user.uid,
+            id: user.uid,
             email: user.email,
           };
           SecureDBGateway.save(u); // FIX THIS IT DOESNT WORK
