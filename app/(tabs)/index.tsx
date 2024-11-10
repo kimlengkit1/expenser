@@ -1,13 +1,19 @@
-
-import { Image, StyleSheet, Platform, Text, View, TouchableOpacity, FlatList, Modal, ScrollView } from 'react-native';
+import { Image, StyleSheet, Platform, Text, View, TouchableOpacity, FlatList, Modal } from 'react-native';
 import { useState } from 'react';
 import { Divider } from "react-native-elements";
+
+// Define the type for each purchaser's share of an item
+type Purchaser = {
+  name: string; // e.g., "Alice"
+  share: number; // Percentage share of the item, e.g., 50 for 50%
+};
 
 // Define the type for a receipt item
 type ReceiptItem = {
   description: string; // e.g., "2x Apples $6.00"
-  purchasedBy: string; // e.g., "Alice"
+  purchasedBy: Purchaser[]; // Array of people splitting this item
 };
+
 // Define the type for a transaction
 type Transaction = {
   id: string;
@@ -29,22 +35,21 @@ const sampleTransactions: Transaction[] = [
   {
     id: '1',
     title: 'Grocery Shopping',
-    amount: 85.50,
+    amount: 85.00,
     date: '2024-11-09',
     category: 'Food',
     merchant: 'Whole Foods',
     paymentMethod: 'Credit Card',
     description: 'Weekly grocery shopping',
     receiptItems: [
-      { description: "2x Apples $6.00", purchasedBy: "Alice" },
-      { description: "1x Bread $2.50", purchasedBy: "Bob" },
-      { description: "1x Milk $4.00", purchasedBy: "Alice" },
+      { description: "2x Apples $6.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Bob", share: 50 }] },
+      { description: "1x Bread $2.50", purchasedBy: [{ name: "Alice", share: 100 }] },
+      { description: "1x Milk $4.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Charlie", share: 50 }] },
     ],
     subtotal: 75.00,
     tax: 10.50,
     total: 85.50,
   },
-  // Add more sample transactions as needed
 ];
 
 type TransactionPopupProps = {
@@ -66,10 +71,14 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
     transaction.receiptItems?.forEach(item => {
       const [_, price] = item.description.split(/(?=\$\d+)/);
       const amount = parseFloat(price.replace('$', '').trim());
-      if (!totals[item.purchasedBy]) {
-        totals[item.purchasedBy] = 0;
-      }
-      totals[item.purchasedBy] += amount;
+
+      item.purchasedBy.forEach(purchaser => {
+        const individualShare = (amount * purchaser.share) / 100;
+        if (!totals[purchaser.name]) {
+          totals[purchaser.name] = 0;
+        }
+        totals[purchaser.name] += individualShare;
+      });
     });
 
     return totals;
@@ -86,135 +95,146 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
     >
       <View style={styles.modalOverlay}>
         <View style={styles.popupContainer}>
-          <ScrollView contentContainerStyle={styles.scrollContent}>
-            {/* Header */}
-            <View style={styles.popupHeader}>
-              <Text style={styles.popupTitle}>Transaction Details</Text>
-              <TouchableOpacity style={styles.closeButton} onPress={onClose}>
-                <Text style={styles.closeButtonText}>×</Text>
-              </TouchableOpacity>
-            </View>
-
-            <Divider style={styles.popupDivider} color="#E0E0E0" />
-
-            {/* Content */}
-            <View style={styles.popupContent}>
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Title</Text>
-                <Text style={styles.detailValue}>{transaction.title}</Text>
-              </View>
-
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Total</Text>
-                <Text style={[
-                  styles.detailValue,
-                  { color: transaction.amount >= 0 ? '#4CAF50' : '#FF5252' }
-                ]}>
-                  ${Math.abs(transaction.amount).toFixed(2)}
-                </Text>
-              </View>
-
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Date</Text>
-                <Text style={styles.detailValue}>{transaction.date}</Text>
-              </View>
-
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Category</Text>
-                <Text style={styles.detailValue}>{transaction.category}</Text>
-              </View>
-
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Merchant</Text>
-                <Text style={styles.detailValue}>{transaction.merchant}</Text>
-              </View>
-
-              <View style={styles.detailRow}>
-                <Text style={styles.detailLabel}>Payment Method</Text>
-                <Text style={styles.detailValue}>{transaction.paymentMethod}</Text>
-              </View>
-
-              <View style={styles.descriptionRow}>
-                <Text style={styles.detailLabel}>Description</Text>
-                <Text style={styles.descriptionText}>{transaction.description}</Text>
-              </View>
-
-              {/* Toggle for Receipt Details */}
-              <TouchableOpacity onPress={() => setShowReceipt(!showReceipt)} style={styles.toggleButton}>
-                <Text style={styles.toggleButtonText}>
-                  {showReceipt ? 'Hide Receipt Details' : 'Show Receipt Details'}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Receipt Details */}
-              {showReceipt && transaction.receiptItems && (
-                <View style={styles.receiptContainer}>
-                  <Text style={styles.receiptTitle}>Receipt Items</Text>
-                  <FlatList
-                    data={transaction.receiptItems}
-                    keyExtractor={(item, index) => index.toString()}
-                    renderItem={({ item }) => {
-                      const [itemText, price] = item.description.split(/(?=\$\d+)/);
-                      return (
-                        <View style={styles.receiptItem}>
-                          <Text style={styles.itemText}>{itemText.trim()} ({item.purchasedBy})</Text>
-                          <Text style={styles.itemPrice}>{price.trim()}</Text>
-                        </View>
-                      );
-                    }}
-                  />
-                  <Divider style={styles.popupDivider} color="#E0E0E0" />
-                  <View style={styles.receiptSummary}>
-                    <Text style={styles.summaryLabel}>Subtotal:</Text>
-                    <Text style={styles.summaryValue}>${transaction.subtotal?.toFixed(2)}</Text>
-                  </View>
-                  <View style={styles.receiptSummary}>
-                    <Text style={styles.summaryLabel}>Tax:</Text>
-                    <Text style={styles.summaryValue}>${transaction.tax?.toFixed(2)}</Text>
-                  </View>
-                  <View style={styles.receiptSummary}>
-                    <Text style={styles.summaryLabel}>Total:</Text>
-                    <Text style={styles.summaryValue}>${transaction.total?.toFixed(2)}</Text>
-                  </View>
+          <FlatList
+            data={[{}]} // Dummy data to wrap entire content as a single item
+            keyExtractor={(_, index) => index.toString()}
+            renderItem={() => (
+              <View>
+                {/* Header */}
+                <View style={styles.popupHeader}>
+                  <Text style={styles.popupTitle}>Transaction Details</Text>
+                  <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+                    <Text style={styles.closeButtonText}>×</Text>
+                  </TouchableOpacity>
                 </View>
-              )}
 
-              {/* Toggle for Breakdown by Person */}
-              <TouchableOpacity onPress={() => setShowBreakdown(!showBreakdown)} style={styles.toggleButton}>
-                <Text style={styles.toggleButtonText}>
-                  {showBreakdown ? 'Hide Payment Breakdown' : 'Show Payment Breakdown'}
-                </Text>
-              </TouchableOpacity>
+                <Divider style={styles.popupDivider} color="#E0E0E0" />
 
-              {/* Breakdown by Person */}
-              {showBreakdown && (
-                <View style={styles.breakdownContainer}>
-                  {Object.entries(totalsByPerson).map(([person, total]) => (
-                    <View key={person} style={styles.breakdownRow}>
-                      <Text style={styles.personName}>{person}:</Text>
-                      <Text style={styles.personTotal}>${total.toFixed(2)}</Text>
+                {/* Content */}
+                <View style={styles.popupContent}>
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Title</Text>
+                    <Text style={styles.detailValue}>{transaction.title}</Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Total</Text>
+                    <Text style={[
+                      styles.detailValue,
+                      { color: transaction.amount >= 0 ? '#4CAF50' : '#FF5252' }
+                    ]}>
+                      ${Math.abs(transaction.amount).toFixed(2)}
+                    </Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Date</Text>
+                    <Text style={styles.detailValue}>{transaction.date}</Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Category</Text>
+                    <Text style={styles.detailValue}>{transaction.category}</Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Merchant</Text>
+                    <Text style={styles.detailValue}>{transaction.merchant}</Text>
+                  </View>
+
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailLabel}>Payment Method</Text>
+                    <Text style={styles.detailValue}>{transaction.paymentMethod}</Text>
+                  </View>
+
+                  <View style={styles.descriptionRow}>
+                    <Text style={styles.detailLabel}>Description</Text>
+                    <Text style={styles.descriptionText}>{transaction.description}</Text>
+                  </View>
+
+                  {/* Toggle for Receipt Details */}
+                  <TouchableOpacity onPress={() => setShowReceipt(!showReceipt)} style={styles.toggleButton}>
+                    <Text style={styles.toggleButtonText}>
+                      {showReceipt ? 'Hide Receipt Details' : 'Show Receipt Details'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Receipt Details */}
+                  {showReceipt && transaction.receiptItems && (
+                    <View style={styles.receiptContainer}>
+                      <Text style={styles.receiptTitle}>Receipt Items</Text>
+                      <FlatList
+                        data={transaction.receiptItems}
+                        keyExtractor={(item, index) => index.toString()}
+                        renderItem={({ item }) => {
+                          const [itemText, price] = item.description.split(/(?=\$\d+)/);
+                          return (
+                            <View style={styles.receiptItem}>
+                              <Text style={styles.itemText}>{itemText.trim()}</Text>
+                              <Text style={styles.itemPrice}>{price.trim()}</Text>
+                              <Text style={styles.splitInfo}>
+                                {item.purchasedBy.map((purchaser, index) => (
+                                  <Text key={index}>
+                                    {purchaser.name} ({purchaser.share}%)
+                                    {index < item.purchasedBy.length - 1 ? ', ' : ''}
+                                  </Text>
+                                ))}
+                              </Text>
+                            </View>
+                          );
+                        }}
+                      />
+                      <Divider style={styles.popupDivider} color="#E0E0E0" />
+                      <View style={styles.receiptSummary}>
+                        <Text style={styles.summaryLabel}>Subtotal:</Text>
+                        <Text style={styles.summaryValue}>${transaction.subtotal?.toFixed(2)}</Text>
+                      </View>
+                      <View style={styles.receiptSummary}>
+                        <Text style={styles.summaryLabel}>Tax:</Text>
+                        <Text style={styles.summaryValue}>${transaction.tax?.toFixed(2)}</Text>
+                      </View>
+                      <View style={styles.receiptSummary}>
+                        <Text style={styles.summaryLabel}>Total:</Text>
+                        <Text style={styles.summaryValue}>${transaction.total?.toFixed(2)}</Text>
+                      </View>
                     </View>
-                  ))}
-                </View>
-              )}
-            </View>
-          </ScrollView>
+                  )}
 
-          {/* Footer */}
-          <View style={styles.popupFooter}>
-            <TouchableOpacity 
-              style={styles.closeFullButton} 
-              onPress={onClose}
-            >
-              <Text style={styles.closeFullButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
+                  {/* Toggle for Breakdown by Person */}
+                  <TouchableOpacity onPress={() => setShowBreakdown(!showBreakdown)} style={styles.toggleButton}>
+                    <Text style={styles.toggleButtonText}>
+                      {showBreakdown ? 'Hide Payment Breakdown' : 'Show Payment Breakdown'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  {/* Breakdown by Person */}
+                  {showBreakdown && (
+                    <View style={styles.breakdownContainer}>
+                      {Object.entries(totalsByPerson).map(([person, total]) => (
+                        <View key={person} style={styles.breakdownRow}>
+                          <Text style={styles.personName}>{person}:</Text>
+                          <Text style={styles.personTotal}>${total.toFixed(2)}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+              </View>
+            )}
+            ListFooterComponent={() => (
+              <View style={styles.popupFooter}>
+                <TouchableOpacity style={styles.closeFullButton} onPress={onClose}>
+                  <Text style={styles.closeFullButtonText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
         </View>
       </View>
     </Modal>
+    
   );
 };
-
 export default function HomeScreen() {
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -279,8 +299,6 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-// Styles (same as defined previously)
 const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 20,
@@ -292,6 +310,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 5,
+  },
+  splitInfo: {
+    color: '#BDBDBD',
+    fontSize: 13,
+    marginTop: 4,
   },
   personName: {
     color: '#BDBDBD',
