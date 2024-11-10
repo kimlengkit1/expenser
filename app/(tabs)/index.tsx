@@ -20,9 +20,7 @@ type Transaction = {
   title: string;
   amount: number;
   date: string;
-  category: string;
   merchant: string;
-  paymentMethod: string;
   description: string;
   receiptItems?: ReceiptItem[];
   subtotal?: number;
@@ -37,9 +35,7 @@ const sampleTransactions: Transaction[] = [
     title: 'Grocery Shopping',
     amount: 85.00,
     date: '2024-11-09',
-    category: 'Food',
     merchant: 'Whole Foods',
-    paymentMethod: 'Credit Card',
     description: 'Weekly grocery shopping',
     receiptItems: [
       { description: "2x Apples $6.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Bob", share: 50 }] },
@@ -49,6 +45,22 @@ const sampleTransactions: Transaction[] = [
     subtotal: 75.00,
     tax: 10.50,
     total: 85.50,
+  },
+  {
+    id: '2',
+    title: 'Big Back Activity',
+    amount: 128.40,
+    date: '2024-11-09',
+    merchant: 'McDonalds',
+    description: 'big back big back',
+    receiptItems: [
+      { description: "100x Chicken Nuggets $50.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Benson", share: 50 }] },
+      { description: "20x McChk Sndwch $60.00", purchasedBy: [{ name: "Alice", share: 50 },{ name: "Benson", share: 50 }] },
+      { description: "5x Lg Coke $10.00", purchasedBy: [{ name: "Alice", share: 50 }, { name: "Charlie", share: 50 }] },
+    ],
+    subtotal: 120.00,
+    tax: 8.40,
+    total: 128.40,
   },
 ];
 
@@ -73,12 +85,13 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
       const amount = parseFloat(price.replace('$', '').trim());
 
       item.purchasedBy.forEach(purchaser => {
-        const individualShare = (amount * purchaser.share) / 100;
+        const individualShare = (amount *1.07 * purchaser.share) / 100;
         if (!totals[purchaser.name]) {
           totals[purchaser.name] = 0;
         }
         totals[purchaser.name] += individualShare;
       });
+      
     });
 
     return totals;
@@ -132,19 +145,10 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
                     <Text style={styles.detailValue}>{transaction.date}</Text>
                   </View>
 
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Category</Text>
-                    <Text style={styles.detailValue}>{transaction.category}</Text>
-                  </View>
 
                   <View style={styles.detailRow}>
                     <Text style={styles.detailLabel}>Merchant</Text>
                     <Text style={styles.detailValue}>{transaction.merchant}</Text>
-                  </View>
-
-                  <View style={styles.detailRow}>
-                    <Text style={styles.detailLabel}>Payment Method</Text>
-                    <Text style={styles.detailValue}>{transaction.paymentMethod}</Text>
                   </View>
 
                   <View style={styles.descriptionRow}>
@@ -171,15 +175,16 @@ const TransactionPopup: React.FC<TransactionPopupProps> = ({ visible, transactio
                           return (
                             <View style={styles.receiptItem}>
                               <Text style={styles.itemText}>{itemText.trim()}</Text>
-                              <Text style={styles.itemPrice}>{price.trim()}</Text>
                               <Text style={styles.splitInfo}>
                                 {item.purchasedBy.map((purchaser, index) => (
                                   <Text key={index}>
-                                    {purchaser.name} ({purchaser.share}%)
+                                    {purchaser.name}
                                     {index < item.purchasedBy.length - 1 ? ', ' : ''}
                                   </Text>
                                 ))}
                               </Text>
+                              <Text style={styles.itemPrice}>{price.trim()}</Text>
+                              
                             </View>
                           );
                         }}
@@ -508,7 +513,7 @@ const styles = StyleSheet.create({
     borderTopColor: 'rgba(255, 255, 255, 0.1)',
   },
   closeFullButton: {
-    backgroundColor: '#333',
+    backgroundColor: '#b84b4b',
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
