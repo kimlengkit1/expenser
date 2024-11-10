@@ -153,15 +153,12 @@ export default function Login() {
         console.log('New user signed up:', user);
         // Optional: navigate to a welcome or onboarding page
         router.push("/logged-in");
-        // navigate("/");
       } else {
         console.log('User signed in:', user);
         router.push("/logged-in");
-        // navigate("/");
       }
     } else if (event === 'SIGNED_OUT') {
       console.log('User signed out');
-      // navigate("/login");
     }
   });
 
