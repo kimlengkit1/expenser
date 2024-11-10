@@ -4,7 +4,6 @@ import json
 from dotenv import load_dotenv
 
 from flask import Flask, request, jsonify
-from werkzeug.utils import secure_filename
 from PIL import Image
 import io
 
@@ -39,7 +38,7 @@ model = genai.GenerativeModel(
 def generate_response_image(img):
     # Open the image file using PIL
     
-    instruction = "format this into a json file for this receipt with just the prices along with the name, dont give me any response other than the JSON. Format it as {'store': 'tempName', 'date': 'tempDate', 'items': [{name: example1, price: 0}, {name: example2, price: 0}], 'subtotal: 0, tax: 0, total: 0'}"
+    instruction = "format this into a json file for this receipt with just the prices along with the name, dont give me any response other than the JSON. Format it as {'store': 'tempName', 'date': 'tempDate', 'items': [{name: example1, predicted name: 'predicted name example1', price: 0}, {name: example2, predicted name: 'predicted name example2', price: 0}], 'subtotal: 0, tax: 0, total: 0'}"
 
     # Generate content with streaming enabled
     response = model.generate_content([instruction, img], stream=True)
@@ -56,8 +55,6 @@ def remove_json_block(raw_string):
         cleaned_string = raw_string[7:-3].strip()  # Removing '```json' at the start and '```' at the end
         return cleaned_string
     return raw_string  # Return the original string if it's not in a JSON block
-
-
 
 def convert_single_to_double_quotes(input_string):
     return input_string.replace("'", '"')
@@ -83,6 +80,7 @@ def upload_image():
     # make the request to gemini
     info = generate_response_image(image1)
     print(info)
+
     newinfo = remove_json_block(info)
     print(newinfo)
 
@@ -91,6 +89,7 @@ def upload_image():
 
     print(type(json.loads(newnewinfo)))
 
+    print("JSON file parsed!")
     return json.loads(newnewinfo)
 
 # Run the Flask app
