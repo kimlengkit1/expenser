@@ -37,9 +37,12 @@ export default function CreateExpense() {
     console.log('parsing receipt');
     console.log(`uri: ${image}`);
 
-    fetch('./data.json')
-    .then((response) => response.json())
-    .then((json) => console.log(json));
+    // const mockData = await fetch('../../constants/sample-data.json')
+    // .then((response) => response.json())
+    // .catch((error) => console.error(error));
+    // .then((json) => console.log(json));
+
+    console.log("mock data: " + mockData.store);
 
   };
     // fetch('http://localhost:5000/parseReceipt', {
