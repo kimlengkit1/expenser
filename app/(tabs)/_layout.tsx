@@ -36,7 +36,7 @@ export default function TabsLayout() {
           height: 80,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
+          fontSize: 14,
           fontWeight: 'bold',
           paddingTop: 5,
         },
