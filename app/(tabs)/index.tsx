@@ -1,9 +1,38 @@
 import { Image, StyleSheet, Platform, Text, View, TouchableOpacity, FlatList, Modal } from 'react-native';
 import { useState, useEffect } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { Divider } from "react-native-elements";
 import React from 'react';
 import { getAuth, onAuthStateChanged } from '@firebase/auth';
 import { router } from 'expo-router';
+
+import SecureDBGateway, { IUserInfo } from '../../lib/localDB';
+import { collection, query, where, getDocs, getFirestore, doc, setDoc } from "firebase/firestore";
+import { getDatabase, set } from "firebase/database";
+import { initializeApp } from '@firebase/app';
+
+const firebaseConfigKK = {
+  apiKey: "AIzaSyBHZFFgouc4GDxhqoantd-jI5OvkMTYPTs",
+  authDomain: "expenser-3f0b3.firebaseapp.com",
+  projectId: "expenser-3f0b3",
+  storageBucket: "expenser-3f0b3.firebasestorage.app",
+  messagingSenderId: "1072306644873",
+  appId: "1:1072306644873:web:1d0a827f71c5064b3e2358",
+  measurementId: "G-YH3EFM8SQ0"
+};
+
+const firebaseConfig = {
+    apiKey: "AIzaSyBZ0VXbZTBDxFHkphCz4MtB9GFZxi6BVxE",
+    authDomain: "expenser-c3ab3.firebaseapp.com",
+    projectId: "expenser-c3ab3",
+    storageBucket: "expenser-c3ab3.firebasestorage.app",
+    messagingSenderId: "565072002035",
+    appId: "1:565072002035:web:6e97f69df58273740df086",
+    measurementId: "G-MTLJ4GRYLE"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 // Define the type for each purchaser's share of an item
 type Purchaser = {
@@ -30,6 +59,108 @@ type Transaction = {
   tax?: number;
   total?: number;
 };
+
+const newMockData = [
+  {
+    "title": "Grocery Shopping",
+    "amount": 85.00,
+    "date": "2024-11-09",
+    "merchant": "Whole Foods",
+    "description": "Weekly grocery shopping",
+    "receiptItems": [
+      { "description": "2x Apples $6.00", "purchasedBy": [{ "name": "Alice", "share": 50 }, { "name": "Bob", "share": 50 }] },
+      { "description": "1x Bread $2.50", "purchasedBy": [{ "name": "Alice", "share": 100 }] },
+      { "description": "1x Milk $4.00", "purchasedBy": [{ "name": "Alice", "share": 50 }, { "name": "Charlie", "share": 50 }] }
+    ],
+    "subtotal": 75.00,
+    "tax": 10.50,
+    "total": 85.50
+  },
+  {
+    "title": "Big Back Activity",
+    "amount": 128.40,
+    "date": "2024-11-09",
+    "merchant": "McDonalds",
+    "description": "big back big back",
+    "receiptItems": [
+      { "description": "100x Chicken Nuggets $50.00", "purchasedBy": [{ "name": "Alice", "share": 50 }, { "name": "Benson", "share": 50 }] },
+      { "description": "20x McChk Sndwch $60.00", "purchasedBy": [{ "name": "Alice", "share": 50 }, { "name": "Benson", "share": 50 }] },
+      { "description": "5x Lg Coke $10.00", "purchasedBy": [{ "name": "Alice", "share": 50 }, { "name": "Charlie", "share": 50 }] }
+    ],
+    "subtotal": 120.00,
+    "tax": 8.40,
+    "total": 128.40
+  },
+  {
+    "title": "Weekend Brunch",
+    "amount": 46.75,
+    "date": "2024-11-10",
+    "merchant": "Starbucks",
+    "description": "Morning brunch with friends",
+    "receiptItems": [
+      { "description": "4x Caramel Macchiato $20.00", "purchasedBy": [{ "name": "Alice", "share": 25 }, { "name": "Bob", "share": 25 }] },
+      { "description": "2x Bacon & Gouda Sndwch $12.50", "purchasedBy": [{ "name": "Charlie", "share": 50 }, { "name": "David", "share": 50 }] },
+      { "description": "2x Croissant $4.50", "purchasedBy": [{ "name": "Alice", "share": 50 }, { "name": "Bob", "share": 50 }] },
+      { "description": "1x Iced Tea $3.75", "purchasedBy": [{ "name": "David", "share": 100 }] }
+    ],
+    "subtotal": 40.75,
+    "tax": 6.00,
+    "total": 46.75
+  },
+  {
+    "title": "Dinner Party Supplies",
+    "amount": 65.00,
+    "date": "2024-11-08",
+    "merchant": "Costco",
+    "description": "Food and drinks for dinner party",
+    "receiptItems": [
+      { "description": "3x Wine Bottles $30.00", "purchasedBy": [{ "name": "Alice", "share": 100 }] },
+      { "description": "1x Salmon Fillets $18.00", "purchasedBy": [{ "name": "Bob", "share": 50 }, { "name": "Charlie", "share": 50 }] },
+      { "description": "2x Cheese Platters $12.00", "purchasedBy": [{ "name": "David", "share": 100 }] },
+      { "description": "1x Salad Mix $5.00", "purchasedBy": [{ "name": "Charlie", "share": 50 }, { "name": "Alice", "share": 50 }] }
+    ],
+    "subtotal": 60.00,
+    "tax": 5.00,
+    "total": 65.00
+  },
+  {
+    "title": "Late Night Snack",
+    "amount": 19.50,
+    "date": "2024-11-07",
+    "merchant": "7-Eleven",
+    "description": "Quick late night snack run",
+    "receiptItems": [
+      { "description": "2x Pizza Rolls $6.00", "purchasedBy": [{ "name": "Charlie", "share": 50 }, { "name": "Benson", "share": 50 }] },
+      { "description": "1x Slurpee $2.50", "purchasedBy": [{ "name": "Alice", "share": 100 }] },
+      { "description": "1x Bag of Chips $3.00", "purchasedBy": [{ "name": "Bob", "share": 50 }, { "name": "Benson", "share": 50 }] },
+      { "description": "1x Chocolate Bar $2.00", "purchasedBy": [{ "name": "David", "share": 100 }] },
+      { "description": "2x Bottled Water $6.00", "purchasedBy": [{ "name": "Alice", "share": 50 }, { "name": "Bob", "share": 50 }] }
+    ],
+    "subtotal": 19.50,
+    "tax": 0.00,
+    "total": 19.50
+  },
+  {
+    "title": "Holiday Baking",
+    "amount": 54.30,
+    "date": "2024-11-06",
+    "merchant": "Target",
+    "description": "Ingredients for holiday baking",
+    "receiptItems": [
+      { "description": "2x Sugar $5.00", "purchasedBy": [{ "name": "Alice", "share": 50 }, { "name": "Charlie", "share": 50 }] },
+      { "description": "3x Flour $9.00", "purchasedBy": [{ "name": "Bob", "share": 50 }, { "name": "David", "share": 50 }] },
+      { "description": "1x Butter $4.50", "purchasedBy": [{ "name": "Alice", "share": 100 }] },
+      { "description": "1x Baking Powder $2.00", "purchasedBy": [{ "name": "David", "share": 100 }] },
+      { "description": "2x Vanilla Extract $7.00", "purchasedBy": [{ "name": "Bob", "share": 50 }, { "name": "Charlie", "share": 50 }] },
+      { "description": "1x Eggs $7.80", "purchasedBy": [{ "name": "Charlie", "share": 50 }, { "name": "David", "share": 50 }] },
+      { "description": "1x Chocolate Chips $7.00", "purchasedBy": [{ "name": "Alice", "share": 50 }, { "name": "Bob", "share": 50 }] }
+    ],
+    "subtotal": 43.30,
+    "tax": 11.00,
+    "total": 54.30
+  }
+];
+
 
 // Sample transaction data.
 const sampleTransactions: Transaction[] = [
@@ -257,6 +388,65 @@ export default function HomeScreen() {
 
     return () => unsubscribe();
   }, []);
+
+  const [transactions, setTransactions] = useState<Transaction[]>(sampleTransactions);
+
+  
+  
+  // const [userInfo, setUserInfo] = useState<IUserInfo | null>(null);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      // This function will be called when the screen comes into focus
+      const loadUserInfo = async () => {
+        console.log("Loading User Info");
+        const userInf = await SecureDBGateway.load();
+        if (userInf && userInf !== null) {
+          // setUserInfo(userInf);
+          console.log("User Info in index: ", userInf);
+          // const db = getFirestore();
+          const q = query(collection(db, "transactions"), where("uid", "==", userInf.id));
+          console.log(q);
+          const querySnapshot = await getDocs(q);
+          console.log(querySnapshot);
+          querySnapshot.forEach((doc) => {
+            console.log(`${doc.id} => ${doc.data()}`);
+          });
+          setTransactions(querySnapshot.docs.map(doc => doc.data()) as Transaction[]);
+        }
+        console.log("User Info: ", userInf);
+        // console.log("Saved User Info: ", userInfo);
+      }
+      loadUserInfo();
+
+      const uploadMockData = async () => {
+        const userInf = await SecureDBGateway.load();
+        if (userInf && userInf !== null) {
+          console.log("trying to upload mock data");
+          // const db = getFirestore();
+
+          const newDocs = newMockData.map((_) => doc(collection(db, "transactions")));
+
+          for (let i = 0; i < newDocs.length; i++) {
+            await setDoc(newDocs[i], { ...newMockData[i], uid: userInf.id });
+          }
+
+          console.log("NOTE: Mock data has been uploaded to the database.");
+          // set(ref(db, 'transactions/' + userInf.id), newMockData);
+        }
+      }
+      // uploadMockData();
+
+      // Cleanup function (optional)
+      return () => {
+        // This will be called when the screen goes out of focus
+        console.log('Screen is unfocused');
+        setTransactions(sampleTransactions);
+      };
+    }, [])
+  );
+
+
 
   const handleTransactionPress = (transaction: Transaction) => {
     setSelectedTransaction(transaction);
