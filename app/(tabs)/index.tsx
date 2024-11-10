@@ -29,7 +29,7 @@ type Transaction = {
   total?: number;
 };
 
-// Sample transaction data
+// Sample transaction data.
 const sampleTransactions: Transaction[] = [
   {
     id: '1',
