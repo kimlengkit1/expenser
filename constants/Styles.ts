@@ -57,7 +57,8 @@ export const styles = StyleSheet.create({
   },
   header: {
     paddingTop: Platform.OS === 'ios' ? 50 : 30,
-    paddingBottom: 20,
+    backgroundColor: "#1a1a1a",
+    marginBottom: 10,
   },
   Logo: {
     width: 75,

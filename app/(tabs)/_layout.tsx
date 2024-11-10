@@ -1,10 +1,16 @@
+import React from 'react';
+import { View, TouchableOpacity, StyleSheet, Image, Platform } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
+import { ScanReceipt } from './ScanReceipt';
+import { Placeholder } from './placeholder';
+import { CustomAddButton } from './ScanReceipt';
 
 // Import screens
 import HomeScreen from './index';
 
 const Tab = createBottomTabNavigator();
+
 
 export default function TabsLayout() {
   return (
@@ -15,7 +21,7 @@ export default function TabsLayout() {
 
           if (route.name === 'Home') {
             iconName = 'home-outline';
-          } else if (route.name === 'Settings') {
+          } else if (route.name === 'Placeholder') {
             iconName = 'settings-outline';
           }
 
@@ -25,20 +31,38 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: 'gray',
         tabBarStyle: {
           backgroundColor: '#1a1a1a',
-          paddingBottom: 5,
+          paddingTop: Platform.OS === 'ios' ? 10 : 0,
+          paddingBottom: Platform.OS === 'ios' ? 20 : 10,
           height: 80,
         },
         tabBarLabelStyle: {
-          fontSize: 20,
+          fontSize: 12,
           fontWeight: 'bold',
+          paddingTop: 5,
         },
         headerShown: false,
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ title: 'Home' }} />
-      {/* Additional screens can be added here */}
-      {/* Example: */}
-      {/* <Tab.Screen name="Settings" component={SettingsScreen} /> */}
+      <Tab.Screen
+        name="Home"
+        component={HomeScreen}
+        options={{ title: 'Home' }}
+      />
+      <Tab.Screen
+        name="Add"
+        component={ScanReceipt}
+        options={{
+          tabBarIcon: () => null, // Hide default icon
+          tabBarButton: (props) => (
+            <CustomAddButton {...props} onPress={() => console.log('Add Button Pressed')} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Placeholder"
+        component={Placeholder}
+        options={{ title: 'Settings' }}
+      />
     </Tab.Navigator>
   );
 }

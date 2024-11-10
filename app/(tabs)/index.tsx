@@ -215,17 +215,20 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Image
-          source={require('@/assets/images/expenserlogo.png')}
-          style={styles.Logo}
-        />
-        <Text style={styles.headerText}>Transactions</Text>
-        <Divider
-          style={styles.headerDivider}
-          color="white"
-          width={1}
-          orientation="horizontal"
-        />
+      
+          <Image
+            source={require('@/assets/images/expenserlogo.png')}
+            style={styles.Logo}
+          />
+          <Text style={styles.headerText}>Transactions</Text>
+       
+          <Divider
+            style={styles.headerDivider}
+            color="white"
+            width={1}
+            orientation="horizontal"
+          />
+          
       </View>
 
       <View style={styles.content}>
