@@ -7,8 +7,12 @@ import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
 
+import SplitEach from '../(creation)/splitEach';
+
 import { useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
+
+import { router } from 'expo-router';
 
 import mockData from "../../constants/sample-data.json";
 
@@ -35,7 +39,7 @@ export default function CreateExpense() {
 
   const parseReceipt = async () => {
     console.log('parsing receipt');
-    console.log(`uri: ${image}`);
+    // console.log(`uri: ${image}`);
 
     // const mockData = await fetch('../../constants/sample-data.json')
     // .then((response) => response.json())
@@ -44,6 +48,11 @@ export default function CreateExpense() {
 
     console.log("mock data: " + mockData.store);
 
+    router.push('/(creation)/splitEach');
+
+    // return (
+    //   <SplitEach data={JSON.stringify(mockData)} />
+    // );
   };
     // fetch('http://localhost:5000/parseReceipt', {
     //   method: 'POST',
