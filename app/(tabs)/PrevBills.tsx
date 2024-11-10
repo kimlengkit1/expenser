@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Platform, Text, View, TouchableOpacity, FlatList, Modal, ScrollView } from 'react-native';
 import { useState } from 'react';
 import { Divider } from 'react-native-elements';
-import { ReceiptItem, Transaction, TransactionPopupProps } from '../../constants/types'
+import { ReceiptItem, Transaction, TransactionPopupProps } from '../../constants/Types'
 
 // Define the type for a receipt item
 // Sample transaction data
