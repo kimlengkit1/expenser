@@ -1,9 +1,7 @@
 import os
-import PIL.Image
 import google.generativeai as genai
 import json
 from dotenv import load_dotenv
-
 
 from flask import Flask, request, jsonify
 from werkzeug.utils import secure_filename
@@ -32,7 +30,7 @@ safety_settings = [
 
 # Set up the model
 model = genai.GenerativeModel(
-    model_name="gemini-1.5-pro",
+    model_name="gemini-1.5-flash",
     safety_settings=safety_settings,
     generation_config=generation_config,
     system_instruction="You are an expert at teaching science to kids. Your task is to engage in conversations about science and answer questions. Explain scientific concepts so that they are easily understandable. Use analogies and examples that are relatable. Use humor and make the conversation both educational and interesting. Ask questions so that you can better understand the user and improve the educational experience. Suggest way that these concepts can be related to the real world with observations and experiments.",
@@ -59,6 +57,13 @@ def remove_json_block(raw_string):
         return cleaned_string
     return raw_string  # Return the original string if it's not in a JSON block
 
+
+
+def convert_single_to_double_quotes(input_string):
+    return input_string.replace("'", '"')
+
+#################back end
+
 # Initialize Flask app
 app = Flask(__name__)
 
@@ -68,15 +73,25 @@ def upload_image():
     if 'image' not in request.files:
         return jsonify({'error': 'No file part in the request'}), 400
 
+    # reads the image
+    print("Reading Image...")
     image = request.files['image']
-
     image_bytes = io.BytesIO(image.read())
     image1 = Image.open(image_bytes)
 
+    print("Making request to gemini...")
+    # make the request to gemini
     info = generate_response_image(image1)
-    fixedinfo = remove_json_block(info)
+    print(info)
+    newinfo = remove_json_block(info)
+    print(newinfo)
 
-    return jsonify(fixedinfo)
+    newnewinfo = convert_single_to_double_quotes(newinfo)
+    print(newnewinfo)
+
+    print(type(json.loads(newnewinfo)))
+
+    return json.loads(newnewinfo)
 
 # Run the Flask app
 if __name__ == '__main__':
