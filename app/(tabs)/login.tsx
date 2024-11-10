@@ -30,10 +30,27 @@ export default function App() {
     return () => subscription.unsubscribe()
   }, [])
 
+  const handleSignOut = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Error signing out:', error.message);
+    } else {
+      setSession(null); // Clear session state
+      router.push('/login'); // Redirect to login page
+    }
+  };
+
   if (!session) {
-    return (<Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} />)
+    return (<Auth 
+      supabaseClient={supabase} 
+      appearance={{ theme: ThemeSupa }}
+      providers={[]}
+      />)
   }
-  else {
-    router.push("/logged-in");
-  }
+  return (
+    <div>
+      <h1>Welcome, {session.user.email}</h1>
+      <button onClick={handleSignOut}>Sign Out</button>
+    </div>
+  ); 
 }
