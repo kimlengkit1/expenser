@@ -1,0 +1,39 @@
+{
+  "store": "Whole Foods",
+  "date": "11/9/2024",
+  "items": [
+    {
+      "name": "Bnsprts Chix Brests",
+      "predictedName": "Boneless Skinless Chicken Breasts",
+      "price": 12.49
+    },
+    {
+      "name": "Org Almd Mlk",
+      "predictedName": "Organic Almond Milk",
+      "price": 3.99
+    },
+    {
+      "name": "GrnAppl 3lb",
+      "predictedName": "Green Apples 3lb",
+      "price": 5.29
+    },
+    {
+      "name": "Pstrs RstdVgts",
+      "predictedName": "Pasta with Roasted Vegetables",
+      "price": 7.49
+    },
+    {
+      "name": "Brn Rce 2lb",
+      "predictedName": "Brown Rice 2lb",
+      "price": 2.89
+    },
+    {
+      "name": "Chs Sld Chs",
+      "predictedName": "Cheddar Salad Cheese",
+      "price": 4.59
+    }
+  ],
+  "subtotal": 36.74,
+  "tax": 2.47,
+  "total": 39.21
+}
